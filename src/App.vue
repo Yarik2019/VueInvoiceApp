@@ -1,7 +1,8 @@
 <template>
-  <div v-if="invoiceLoaded">
+
+  <div class="apps" v-if="invoiceLoaded">
     <div v-if="!mobile" class="app flex flex-column">
-      <navigation />
+      <navigation  />
       <div class="app-content flex flex-column">
         <Modal v-if="modalActive" />
         <transition name="invoice">
@@ -33,7 +34,7 @@ export default {
   components: {
     navigation,
     InvoiceModule,
-    Modal
+    Modal,
   },
   created() {
     this.GET_INVOICES();
@@ -41,7 +42,7 @@ export default {
     window.addEventListener("resize", this.checkScreen);
   },
   methods: {
-    ...mapActions(['GET_INVOICES']),
+    ...mapActions(["GET_INVOICES"]),
 
     checkScreen() {
       const windowWidth = window.innerWidth;
@@ -53,7 +54,7 @@ export default {
     },
   },
   computed: {
-    ...mapState(["invoiceModal", 'modalActive', 'invoiceLoaded']),
+    ...mapState(["invoiceModal", "modalActive", "invoiceLoaded"]),
   },
 };
 </script>
@@ -82,6 +83,8 @@ export default {
     position: relative;
   }
 }
+
+
 
 .mobile-message {
   text-align: center;

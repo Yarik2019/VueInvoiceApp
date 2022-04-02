@@ -1,5 +1,16 @@
 import { createStore } from 'vuex';
-import { db, collection, doc, getDocs, updateDoc, deleteDoc } from '../fitebase/fitebaseInit';
+import {
+  db, collection, doc, getDocs,
+  updateDoc, deleteDoc,
+  auth
+} from '../fitebase/fitebaseInit';
+
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut
+} from 'firebase/auth'
+import router from '../router';
 export default createStore({
   state: {
     invoiceData: [],
@@ -7,7 +18,8 @@ export default createStore({
     modalActive: null,
     invoiceLoaded: null,
     currentInvoiceArray: null,
-    editInvoice: null
+    editInvoice: null,
+    user: null,
 
   },
   mutations: {
@@ -19,7 +31,7 @@ export default createStore({
     },
     SET_INVOICE_DATA(state, payload) {
       state.invoiceData.push(payload);
-    
+
     },
     INVOICES_LOADED(state) {
       state.invoiceLoaded = true;
@@ -54,7 +66,18 @@ export default createStore({
 
         }
       })
+    },
+
+
+    // login regiser
+
+    SET_USER(state, payload) {
+      state.user = payload;
+    },
+    CLEAR_USER(state) {
+      state.user = null;
     }
+
   },
   actions: {
     async GET_INVOICES({ commit, state }) {
@@ -124,6 +147,90 @@ export default createStore({
         invoiceDraft: false,
       });
       commit('UPDATE_STATUS_TO_PENDING', docId);
+    },
+
+    // login regiser
+    
+
+    async LOGIN({ commit }, details) {
+      const { email, password } = details
+      console.log(email, password);
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password)
+      } catch (error) {
+        switch (error.code) {
+          case 'auth/user-not-found':
+            alert("User not found")
+            break
+          case 'auth/wrong-password':
+            alert("Wrong password")
+            break
+          default:
+            alert("Something went wrong")
+        }
+
+        return
+      }
+
+      commit('SET_USER', auth.currentUser)
+
+      router.push('/')
+    },
+
+   
+    async REGISTER ({ commit}, details) {
+      const { email, password } = details
+      console.log(email, password);
+     try {
+       await createUserWithEmailAndPassword(auth, email, password)
+     } catch (error) {
+       switch(error.code) {
+         case 'auth/email-already-in-use':
+           alert("Email already in use")
+           break
+         case 'auth/invalid-email':
+           alert("Invalid email")
+           break
+         case 'auth/operation-not-allowed':
+           alert("Operation not allowed")
+           break
+         case 'auth/weak-password':
+           alert("Weak password")
+           break
+         default:
+           alert("Something went wrong")
+       }
+
+       return
+     }
+
+     commit('SET_USER', auth.currentUser)
+
+     router.push('/')
+   },
+
+
+    async LOGOUT({ commit }) {
+
+      await signOut(auth);
+
+      commit('CLEAR_USER');
+
+      router.push('/login');
+    },
+
+    FETCH_USER({commit}) {
+      auth.onAuthStateChanged(async (user) =>{
+        if(user === null){
+          commit('CLEAR_USER');
+        }else{
+          commit('CLEAR_USER', user);
+          if(router.isReady() && router.currentRoute.value.path === '/login'){
+            router.push('/')
+          }
+        }
+      })
     }
   },
   modules: {
