@@ -24,3 +24,4 @@ npm run lint
 See [Configuration Reference](https://cli.vuejs.org/config/).
 # VueInvoiceApp
 # yt-vue-invoice-app
+# yt-vue-invoice-app
